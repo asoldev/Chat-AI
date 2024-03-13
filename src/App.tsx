@@ -30,26 +30,21 @@ function AnyComponent({ sendMessage, changeInput }: any) {
     changeInput(...results.map((item: any) => item.transcript));
   }, [results]);
   return (
-    <svg
-      onClick={isRecording ? stopSpeechToText : startSpeechToText}
-      xmlns="http://www.w3.org/2000/svg"
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-      className="h-6 w-6 text-gray-600"
-    >
-      <path
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        stroke-width="2"
-        d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"
-      ></path>
-    </svg>
+    <div className=" right-0 items-center inset-y-0 hidden sm:flex">
+      <button
+        type="button"
+        className="inline-flex items-center justify-center rounded-lg px-4 py-3 transition duration-500 ease-in-out text-white bg-blue-500 hover:bg-blue-400 focus:outline-none"
+        onClick={isRecording ? stopSpeechToText : startSpeechToText}
+      >
+        <span className="font-bold">{isRecording ? "Stop" : "Speak"}</span>
+      </button>
+    </div>
   );
 }
 function App() {
   const [dataset, setDataset] = useState<any>([]);
   const [inputValue, setInputValue] = useState("");
+  const [file, setFile] = useState(null);
 
   const sendMessage = async (question: string) => {
     setInputValue("");
@@ -66,7 +61,7 @@ function App() {
     const param = {
       question,
     };
-    const response = await fetch("http://localhost:3000/chatbot", {
+    const response = await fetch("http://54.196.226.134:5002/chatbot", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -83,6 +78,25 @@ function App() {
     new Audio(json.audioUrl).play();
   };
 
+  const speechToText = async (file: any) => {
+    const formData: FormData = new FormData();
+    formData.append(file, file);
+    const response = await fetch("http://54.196.226.134:5002/speech-to-text", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: formData,
+    });
+
+    const json = await response.json();
+
+    handleSetData({
+      isActive: true,
+      text: json.text,
+    });
+  };
+
   const handleSetData = (data: any) => {
     return setDataset((pre: any) => [...pre, data]);
   };
@@ -90,9 +104,13 @@ function App() {
     setInputValue(value);
   };
 
+  const onFileChange = async (event: any) => {
+    console.log(event.target.files[0]);
+    await speechToText(event.target.files[0]);
+  };
   return (
     <>
-      <div className="flex-1 p:2 sm:p-6 justify-between flex flex-col w-[500px] h-screen">
+      <div className="flex-1 p:2 sm:p-6 justify-between flex flex-col w-[800px] h-screen">
         <div
           id="messages"
           className="flex flex-col space-y-4 p-3 overflow-y-auto scrollbar-thumb-blue scrollbar-thumb-rounded scrollbar-track-blue-lighter scrollbar-w-2 scrolling-touch"
@@ -137,17 +155,12 @@ function App() {
         </div>
 
         <div className="border-t-2 border-gray-200 px-4 pt-4 mb-2 sm:mb-0">
-          <div className="relative flex">
-            <span className="absolute inset-y-0 flex items-center">
-              <button
-                type="button"
-                className="inline-flex items-center justify-center rounded-full h-12 w-12 transition duration-500 ease-in-out text-gray-500 hover:bg-gray-300 focus:outline-none"
-              >
-                <AnyComponent
-                  sendMessage={sendMessage}
-                  changeInput={handleChange}
-                />
-              </button>
+          <div className="relative flex gap-2">
+            <span className=" inset-y-0 flex items-center">
+              <AnyComponent
+                sendMessage={sendMessage}
+                changeInput={handleChange}
+              />
             </span>
             <input
               type="text"
@@ -156,7 +169,7 @@ function App() {
               placeholder="Write your message!"
               className="w-full focus:outline-none focus:placeholder-gray-400 text-gray-600 placeholder-gray-600 pl-12 bg-gray-200 rounded-md py-3"
             />
-            <div className="absolute right-0 items-center inset-y-0 hidden sm:flex">
+            <div className=" right-0 items-center inset-y-0 hidden sm:flex">
               <button
                 type="button"
                 className="inline-flex items-center justify-center rounded-lg px-4 py-3 transition duration-500 ease-in-out text-white bg-blue-500 hover:bg-blue-400 focus:outline-none"
@@ -173,6 +186,34 @@ function App() {
                 </svg>
               </button>
             </div>
+            {/* <div className=" right-0 items-center inset-y-0 hidden sm:flex">
+              <label
+                htmlFor="uploadFile1"
+                className="inline-flex items-center justify-center rounded-lg px-4 py-3 transition duration-500 ease-in-out text-white bg-blue-500 hover:bg-blue-400 focus:outline-none"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="w-5 mr-2 fill-white inline"
+                  viewBox="0 0 32 32"
+                >
+                  <path
+                    d="M23.75 11.044a7.99 7.99 0 0 0-15.5-.009A8 8 0 0 0 9 27h3a1 1 0 0 0 0-2H9a6 6 0 0 1-.035-12 1.038 1.038 0 0 0 1.1-.854 5.991 5.991 0 0 1 11.862 0A1.08 1.08 0 0 0 23 13a6 6 0 0 1 0 12h-3a1 1 0 0 0 0 2h3a8 8 0 0 0 .75-15.956z"
+                    data-original="#000000"
+                  />
+                  <path
+                    d="M20.293 19.707a1 1 0 0 0 1.414-1.414l-5-5a1 1 0 0 0-1.414 0l-5 5a1 1 0 0 0 1.414 1.414L15 16.414V29a1 1 0 0 0 2 0V16.414z"
+                    data-original="#000000"
+                  />
+                </svg>
+                Upload
+                <input
+                  type="file"
+                  onChange={(e) => onFileChange(e)}
+                  id="uploadFile1"
+                  className="hidden"
+                />
+              </label>
+            </div> */}
           </div>
         </div>
       </div>
