@@ -97,14 +97,17 @@ function App() {
     const param = {
       question,
     };
-    const response = await fetch("http://18.141.178.175:5002/chatbot", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      referrerPolicy: "unsafe-url",
-      body: JSON.stringify(param),
-    });
+    const response = await fetch(
+      "https://backend-chat-latest.onrender.com/chatbot",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        referrerPolicy: "unsafe-url",
+        body: JSON.stringify(param),
+      }
+    );
 
     const json = await response.json();
 
