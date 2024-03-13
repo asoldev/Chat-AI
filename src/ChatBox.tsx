@@ -60,6 +60,13 @@ function ChatBox() {
     sendMessage(messageRes.content);
   };
 
+  const handleKeyPress = (event: any) => {
+    if (event.key === "Enter") {
+      sendMessage(inputValue);
+      setInputValue("");
+    }
+  };
+
   useEffect(() => {
     setTimeout(() => {
       speakerRef.current && speakerRef.current.play();
@@ -98,6 +105,9 @@ function ChatBox() {
                 type="text"
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleKeyPress(e);
+                }}
                 placeholder="Write your message!"
                 className="w-full focus:outline-none focus:placeholder-gray-400 text-gray-600 placeholder-gray-600 px-6 bg-gray-200 rounded-md py-3"
               />
