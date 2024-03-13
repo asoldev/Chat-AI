@@ -60,7 +60,7 @@ function App() {
     const param = {
       question,
     };
-    const response = await fetch("http://http://54.196.226.134:5002/chatbot", {
+    const response = await fetch("http://18.141.178.175:5002/chatbot", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
