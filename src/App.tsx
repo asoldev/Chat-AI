@@ -1,8 +1,28 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import useSpeechToText from "react-hook-speech-to-text";
+import * as icon from "react-loader-spinner";
 import "./App.css";
 
-function AnyComponent({ sendMessage, changeInput }: any) {
+function Typewriter({ text, delay }: any) {
+  const [currentText, setCurrentText] = useState("");
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  // Typing logic goes here
+  useEffect(() => {
+    if (currentIndex < text.length) {
+      const timeout = setTimeout(() => {
+        setCurrentText((prevText) => prevText + text[currentIndex]);
+        setCurrentIndex((prevIndex) => prevIndex + 1);
+      }, delay);
+
+      return () => clearTimeout(timeout);
+    }
+  }, [currentIndex, delay, text]);
+
+  return <span>{currentText}</span>;
+}
+
+function Voice({ sendMessage, changeInput, setIsSpeek }: any) {
   const {
     error,
     isRecording,
@@ -18,6 +38,7 @@ function AnyComponent({ sendMessage, changeInput }: any) {
   if (error) return <p>Web Speech API is not available in this browser 🤷‍</p>;
 
   useEffect(() => {
+    setIsSpeek(isRecording);
     if (isRecording === false && results.length > 0) {
       const result: any = results[results.length - 1];
       stopSpeechToText();
@@ -30,23 +51,39 @@ function AnyComponent({ sendMessage, changeInput }: any) {
     changeInput(...results.map((item: any) => item.transcript));
   }, [results]);
   return (
-    <div className=" right-0 items-center inset-y-0 hidden sm:flex">
-      <button
-        type="button"
-        className="inline-flex items-center justify-center rounded-lg px-4 py-3 transition duration-500 ease-in-out text-white bg-blue-500 hover:bg-blue-400 focus:outline-none"
-        onClick={isRecording ? stopSpeechToText : startSpeechToText}
-      >
-        <span className="font-bold">{isRecording ? "Stop" : "Speak"}</span>
-      </button>
-    </div>
+    <>
+      <div className=" right-0 items-center inset-y-0 hidden sm:flex">
+        <button
+          type="button"
+          className="inline-flex items-center justify-center rounded-lg px-4 py-3 transition duration-500 ease-in-out text-white bg-blue-500 hover:bg-blue-400 focus:outline-none"
+          onClick={isRecording ? stopSpeechToText : startSpeechToText}
+        >
+          <i className="ri-mic-line"></i>
+        </button>
+      </div>
+    </>
   );
 }
+
 function App() {
   const [dataset, setDataset] = useState<any>([]);
   const [inputValue, setInputValue] = useState("");
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [srcAudio, setSrcAudio] = useState("");
+  const [isSpeek, setIsSpeek] = useState<boolean>(false);
+  const speakerRef = useRef<HTMLAudioElement | null>(null);
+
+  const divRef = useRef<any>(null);
+
+  useEffect(() => {
+    if (divRef.current) {
+      divRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  });
 
   const sendMessage = async (question: string) => {
     setInputValue("");
+    setIsLoading(true);
 
     if (!question || question === "") {
       return;
@@ -75,7 +112,8 @@ function App() {
       isActive: true,
       text: json.answer,
     });
-    new Audio(json.audioUrl).play();
+    setSrcAudio(json.audioUrl);
+    setIsLoading(false);
   };
 
   const handleSetData = (data: any) => {
@@ -85,12 +123,22 @@ function App() {
     setInputValue(value);
   };
 
+  useEffect(() => {
+    setTimeout(() => {
+      speakerRef.current && speakerRef.current.play();
+    }, 500);
+  }, [srcAudio]);
   return (
     <>
-      <div className="flex-1 p:2 sm:p-6 justify-between flex flex-col w-[800px] h-screen">
+      <h2>Chat AI</h2>
+      <audio className="hidden" src={srcAudio} ref={speakerRef} />
+      <div
+        className="flex-1 p:2 sm:p-6 justify-between 
+        flex flex-col w-[800px] h-screen"
+      >
         <div
-          id="messages"
-          className="flex flex-col space-y-4 p-3 overflow-y-auto scrollbar-thumb-blue scrollbar-thumb-rounded scrollbar-track-blue-lighter scrollbar-w-2 scrolling-touch"
+          id="style-1"
+          className="flex flex-col space-y-4 p-3 overflow-y-auto scrolling-touch"
         >
           {dataset.map((item: any) =>
             item.isActive === true ? (
@@ -98,8 +146,11 @@ function App() {
                 <div className="flex items-end">
                   <div className="flex flex-col space-y-2 text-xs max-w-xs mx-2 order-2 items-start">
                     <div>
-                      <span className="px-4 py-2 rounded-lg inline-block rounded-bl-none bg-gray-300 text-gray-600">
-                        {item.text}
+                      <span
+                        ref={divRef}
+                        className=" px-4 py-2 rounded-lg inline-block rounded-bl-none bg-gray-300 text-gray-600"
+                      >
+                        <Typewriter text={item.text} delay={30} />
                       </span>
                     </div>
                   </div>
@@ -115,8 +166,8 @@ function App() {
                 <div className="flex items-end justify-end">
                   <div className="flex flex-col space-y-2 text-xs max-w-xs mx-2 order-1 items-end">
                     <div>
-                      <span className="px-4 py-2 rounded-lg inline-block rounded-br-none bg-blue-600 text-white ">
-                        {item.text}
+                      <span className=" px-4 py-2 rounded-lg inline-block rounded-br-none bg-blue-600 text-white ">
+                        <p>{item.text}</p>
                       </span>
                     </div>
                   </div>
@@ -129,68 +180,76 @@ function App() {
               </div>
             )
           )}
+
+          {isLoading ? (
+            <div className="chat-message">
+              <div className="flex items-end">
+                <div className="flex flex-col space-y-2 text-xs max-w-xs mx-2 order-2 items-start">
+                  <div>
+                    <span className=" px-4 py-2 rounded-lg inline-block rounded-bl-none bg-gray-300 text-gray-600">
+                      <icon.ThreeDots
+                        visible={true}
+                        height="18"
+                        width="18"
+                        color="#353230"
+                        radius="9"
+                        ariaLabel="three-dots-loading"
+                        wrapperStyle={{}}
+                        wrapperClass=""
+                      />
+                    </span>
+                  </div>
+                </div>
+                <img
+                  src="https://images.unsplash.com/photo-1549078642-b2ba4bda0cdb?ixlib=rb-1.2.1&amp;ixid=eyJhcHBfaWQiOjEyMDd9&amp;auto=format&amp;fit=facearea&amp;facepad=3&amp;w=144&amp;h=144"
+                  alt="My profile"
+                  className="w-6 h-6 rounded-full order-1"
+                />
+              </div>
+            </div>
+          ) : null}
         </div>
 
-        <div className="border-t-2 border-gray-200 px-4 pt-4 mb-2 sm:mb-0">
+        <div className=" border-gray-200 px-4 pt-4 mb-2 sm:mb-0">
           <div className="relative flex gap-2">
+            <div className="relative w-[100%]">
+              <div className="absolute top-1/2 right-1 transform -translate-x-1/2 -translate-y-1/2">
+                {isSpeek ? (
+                  <icon.Audio
+                    height="24"
+                    width="24"
+                    color="#4fa94d"
+                    ariaLabel="audio-loading"
+                    wrapperStyle={{}}
+                    wrapperClass="wrapper-class"
+                    visible={true}
+                  />
+                ) : null}
+              </div>
+              <input
+                type="text"
+                value={inputValue}
+                onChange={(e) => handleChange(e.target.value)}
+                placeholder="Write your message!"
+                className="w-full focus:outline-none focus:placeholder-gray-400 text-gray-600 placeholder-gray-600 px-6 bg-gray-200 rounded-md py-3"
+              />
+            </div>
             <span className=" inset-y-0 flex items-center">
-              <AnyComponent
+              <Voice
                 sendMessage={sendMessage}
                 changeInput={handleChange}
+                setIsSpeek={setIsSpeek}
               />
             </span>
-            <input
-              type="text"
-              value={inputValue}
-              onChange={(e) => handleChange(e.target.value)}
-              placeholder="Write your message!"
-              className="w-full focus:outline-none focus:placeholder-gray-400 text-gray-600 placeholder-gray-600 pl-12 bg-gray-200 rounded-md py-3"
-            />
             <div className=" right-0 items-center inset-y-0 hidden sm:flex">
               <button
                 type="button"
                 className="inline-flex items-center justify-center rounded-lg px-4 py-3 transition duration-500 ease-in-out text-white bg-blue-500 hover:bg-blue-400 focus:outline-none"
                 onClick={() => sendMessage(inputValue)}
               >
-                <span className="font-bold">Send</span>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                  className="h-6 w-6 ml-2 transform rotate-90"
-                >
-                  <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z"></path>
-                </svg>
+                <i className="ri-send-plane-2-line"></i>
               </button>
             </div>
-            {/* <div className=" right-0 items-center inset-y-0 hidden sm:flex">
-              <label
-                htmlFor="uploadFile1"
-                className="inline-flex items-center justify-center rounded-lg px-4 py-3 transition duration-500 ease-in-out text-white bg-blue-500 hover:bg-blue-400 focus:outline-none"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="w-5 mr-2 fill-white inline"
-                  viewBox="0 0 32 32"
-                >
-                  <path
-                    d="M23.75 11.044a7.99 7.99 0 0 0-15.5-.009A8 8 0 0 0 9 27h3a1 1 0 0 0 0-2H9a6 6 0 0 1-.035-12 1.038 1.038 0 0 0 1.1-.854 5.991 5.991 0 0 1 11.862 0A1.08 1.08 0 0 0 23 13a6 6 0 0 1 0 12h-3a1 1 0 0 0 0 2h3a8 8 0 0 0 .75-15.956z"
-                    data-original="#000000"
-                  />
-                  <path
-                    d="M20.293 19.707a1 1 0 0 0 1.414-1.414l-5-5a1 1 0 0 0-1.414 0l-5 5a1 1 0 0 0 1.414 1.414L15 16.414V29a1 1 0 0 0 2 0V16.414z"
-                    data-original="#000000"
-                  />
-                </svg>
-                Upload
-                <input
-                  type="file"
-                  onChange={(e) => onFileChange(e)}
-                  id="uploadFile1"
-                  className="hidden"
-                />
-              </label>
-            </div> */}
           </div>
         </div>
       </div>

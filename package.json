@@ -10,13 +10,21 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@fortawesome/fontawesome-svg-core": "^6.5.1",
+    "@fortawesome/react-fontawesome": "^0.2.0",
+    "audiobuffer-to-wav": "^1.0.0",
+    "axios": "^1.6.7",
+    "capacitor-voice-recorder": "^5.0.0",
     "react": "^18.2.0",
     "react-audio-player": "^0.17.0",
     "react-dom": "^18.2.0",
     "react-hook-speech-to-text": "^0.8.0",
-    "react-speech-recognition": "^3.10.0"
+    "react-loader-spinner": "^6.1.6",
+    "react-speech-recognition": "^3.10.0",
+    "remixicon": "^4.2.0"
   },
   "devDependencies": {
+    "@types/audiobuffer-to-wav": "^1.0.4",
     "@types/react": "^18.2.64",
     "@types/react-dom": "^18.2.21",
     "@typescript-eslint/eslint-plugin": "^7.1.1",
