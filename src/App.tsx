@@ -61,7 +61,7 @@ function App() {
     const param = {
       question,
     };
-    const response = await fetch("http://54.196.226.134:5002/chatbot", {
+    const response = await fetch("http://http://54.196.226.134:5002/chatbot", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -78,16 +78,19 @@ function App() {
     new Audio(json.audioUrl).play();
   };
 
-  const speechToText = async (file: any) => {
+  const speechToText = async (file: File) => {
     const formData: FormData = new FormData();
-    formData.append(file, file);
-    const response = await fetch("http://54.196.226.134:5002/speech-to-text", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: formData,
-    });
+    formData.append("file", file);
+    const response = await fetch(
+      "http://http://54.196.226.134:5002/speech-to-text",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: formData,
+      }
+    );
 
     const json = await response.json();
 
@@ -105,7 +108,6 @@ function App() {
   };
 
   const onFileChange = async (event: any) => {
-    console.log(event.target.files[0]);
     await speechToText(event.target.files[0]);
   };
   return (
