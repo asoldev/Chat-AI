@@ -65,6 +65,7 @@ function App() {
       headers: {
         "Content-Type": "application/json",
       },
+      referrerPolicy: "unsafe-url",
       body: JSON.stringify(param),
     });
 
