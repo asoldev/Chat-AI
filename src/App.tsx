@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import "./App.css";
 import useSpeechToText from "react-hook-speech-to-text";
+import "./App.css";
 
 function AnyComponent({ sendMessage, changeInput }: any) {
   const {
@@ -44,7 +44,6 @@ function AnyComponent({ sendMessage, changeInput }: any) {
 function App() {
   const [dataset, setDataset] = useState<any>([]);
   const [inputValue, setInputValue] = useState("");
-  const [file, setFile] = useState(null);
 
   const sendMessage = async (question: string) => {
     setInputValue("");
@@ -78,28 +77,6 @@ function App() {
     new Audio(json.audioUrl).play();
   };
 
-  const speechToText = async (file: File) => {
-    const formData: FormData = new FormData();
-    formData.append("file", file);
-    const response = await fetch(
-      "http://http://54.196.226.134:5002/speech-to-text",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: formData,
-      }
-    );
-
-    const json = await response.json();
-
-    handleSetData({
-      isActive: true,
-      text: json.text,
-    });
-  };
-
   const handleSetData = (data: any) => {
     return setDataset((pre: any) => [...pre, data]);
   };
@@ -107,9 +84,6 @@ function App() {
     setInputValue(value);
   };
 
-  const onFileChange = async (event: any) => {
-    await speechToText(event.target.files[0]);
-  };
   return (
     <>
       <div className="flex-1 p:2 sm:p-6 justify-between flex flex-col w-[800px] h-screen">
