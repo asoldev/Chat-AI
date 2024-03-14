@@ -72,6 +72,16 @@ function ChatBox() {
       speakerRef.current && speakerRef.current.play();
     }, 500);
   }, [audioSrc]);
+
+  useEffect(() => {
+    (async () => {
+      setIsLoading(true);
+      const messageRes = await apiSendMessage("Get started");
+      addMessageToHistories(messageRes);
+      setIsLoading(false);
+      setAudioSrc(messageRes.audioUrl);
+    })();
+  }, []);
   return (
     <>
       <audio className="hidden" src={audioSrc} ref={speakerRef} />
