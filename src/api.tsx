@@ -2,7 +2,7 @@ import axios from "axios";
 
 // Create an instance of Axios with default configuration
 const axiosInstance = axios.create({
-  baseURL: "https://backend-chat-latest.onrender.com",
+  baseURL: "https://backend-gpt-seven.vercel.app",
 });
 
 export const apiSendMessage = async (text: string) => {
